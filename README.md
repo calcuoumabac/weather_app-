@@ -26,7 +26,7 @@ Before you begin, ensure you have installed:
 - **PostGIS extension** - [Guide](https://postgis.net/install/)
 - **Git** (optional) - [Download](https://git-scm.com/downloads)
 ## Usage Guide
-Drawing a Polygon
+## Drawing a Polygon
 Click on the map to add points (vertices)
 
 Each click adds a numbered marker
@@ -35,31 +35,31 @@ Double-click to complete the polygon
 
 The polygon turns green when complete
 
-Saving Data
+## Saving Data
 Click "Save Area to PostGIS"
 
-The app automatically:
+## The app automatically:
 
-Saves coordinates to database
+- Saves coordinates to database
 
-Fetches weather for the area
+- Fetches weather for the area
 
-Displays weather info
+- Displays weather info
 
-Adds to saved list
+- Adds to saved list
 
-Viewing Saved Polygons
+## Viewing Saved Polygons
 All saved areas appear in the sidebar
 
 Click any saved area to:
 
-Zoom to it on map
+- Zoom to it on map
 
-View its weather data
+- View its weather data
 
-See when it was created
+- See when it was created
 
-Managing Drawings
+## Managing Drawings
 "Clear Drawing" - Remove current drawing
 
 "Refresh List" - Update saved polygons list
