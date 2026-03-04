@@ -16,8 +16,14 @@ This application demonstrates a complete GIS (Geographic Information System) wor
  ##  How It Works
 - .1 Draw polygon
 -  2. Send coordinates
-   3. Save to DB
-   4.  4. Query weather
-   5. Display results 
+- 3. Save to DB
+- 4. Query weather
+- 5. Display results
+ ##  Prerequisites
+Before you begin, ensure you have installed:
+- **Python 3.8+** - [Download](https://www.python.org/downloads/)
+- **PostgreSQL 12+** - [Download](https://www.postgresql.org/download/)
+- **PostGIS extension** - [Guide](https://postgis.net/install/)
+- **Git** (optional) - [Download](https://git-scm.com/downloads)
  
  
