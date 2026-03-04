@@ -14,11 +14,11 @@ This application demonstrates a complete GIS (Geographic Information System) wor
 - **OpenWeatherMap API** : Weather data 
 - **Bootstrap/CSS** : Styling and layout 
  ##  How It Works
-- .1 Draw polygon
--  2. Send coordinates
-- 3. Save to DB
-- 4. Query weather
-- 5. Display results
+- 1 Draw polygon
+- 2 Send coordinates
+- 3 Save to DB
+- 4 Query weather
+- 5 Display results
  ##  Prerequisites
 Before you begin, ensure you have installed:
 - **Python 3.8+** - [Download](https://www.python.org/downloads/)
