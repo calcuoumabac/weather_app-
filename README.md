@@ -1,5 +1,6 @@
 # weather_app-
 draw a shape you want on a map and get the weather description 
+
 ##  Overview
 This application demonstrates a complete GIS (Geographic Information System) workflow:
 - **Frontend**: Users draw polygons on a Leaflet map
@@ -67,5 +68,28 @@ Click any saved area to:
 "Clear Drawing" - Remove current drawing
 
 "Refresh List" - Update saved polygons list
+
+## Quick Start (1-Minute Setup)
+
+**1. Clone and enter**
+git clone <your-repo>
+cd gis-weather-app
+
+**2. Setup virtual environment**
+python -m venv venv
+venv\Scripts\activate  # Windows
+
+**3. Install dependencies**
+pip install -r requirements.txt
+
+**4. Create database**
+createdb gis_db
+psql -d gis_db -c "CREATE EXTENSION postgis;"
+
+**5. Run migrations**
+python manage.py migrate
+
+**6. Start server**
+python manage.py runserver
  
  
