@@ -27,6 +27,7 @@ Before you begin, ensure you have installed:
 - **Git** (optional) - [Download](https://git-scm.com/downloads)
 ## Usage Guide
 **Drawing a Polygon**
+
 Click on the map to add points (vertices)
 
 Each click adds a numbered marker
@@ -36,7 +37,8 @@ Double-click to complete the polygon
 The polygon turns green when complete
 
 **Saving Data**
-- Click "Save Area to PostGIS"
+
+Click "Save Area to PostGIS"
 
 **The app automatically:**
 
