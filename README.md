@@ -69,7 +69,7 @@ Click any saved area to:
 
 "Refresh List" - Update saved polygons list
 
-## Quick Start (1-Minute Setup)
+## Quick Start 
 
 **1. Clone and enter**
 
