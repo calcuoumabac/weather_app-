@@ -73,8 +73,7 @@ Click any saved area to:
 
 **1. Clone and enter**
 
-git clone <your-repo>
-cd gis-weather-app
+git clone https://github.com/calcuoumabac/weather_app-.git 
 
 **2. Setup virtual environment**
 
