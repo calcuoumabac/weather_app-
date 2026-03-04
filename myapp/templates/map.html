@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GIS Weather App - Point Drawing</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        #map { 
+            height: 100vh; 
+            width: 100%; 
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        
+        .controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            width: 320px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .controls h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 8px;
+        }
+        
+        .btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px 0;
+            width: 100%;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover { background: #2980b9; }
+        .btn:disabled { background: #bdc3c7; cursor: not-allowed; }
+        .btn.reset { background: #e74c3c; }
+        .btn.reset:hover { background: #c0392b; }
+        
+        .status {
+            margin: 15px 0;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid #3498db;
+            font-size: 14px;
+        }
+        
+        .instructions {
+            background: #e8f4f8;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-size: 13px;
+            color: #2c3e50;
+        }
+        
+        .instructions ol {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+        
+        .weather-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .weather-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 5px;
+        }
+        
+        .polygon-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin: 10px 0;
+        }
+        
+        .polygon-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-radius: 5px;
+            cursor: pointer;
+            border-left: 3px solid #3498db;
+            transition: all 0.2s;
+        }
+        
+        .polygon-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .point-marker {
+            background: #3498db;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    
+    <div class="controls">
+        <h3>📍 GIS Weather App</h3>
+        
+        <div class="instructions">
+            <strong>How to draw:</strong>
+            <ol>
+                <li>Click on map to add points (need at least 3)</li>
+                <li>Double-click to finish polygon</li>
+                <li>Click "Save Area" to store in PostGIS</li>
+            </ol>
+        </div>
+        
+        <div class="status" id="status">
+            👆 Click on map to start drawing
+        </div>
+        
+        <button class="btn" id="saveBtn" onclick="savePolygon()" disabled>💾 Save Area to PostGIS</button>
+        <button class="btn reset" onclick="resetDrawing()">🗑️ Clear Drawing</button>
+        <button class="btn" onclick="loadPolygons()">🔄 Refresh List</button>
+        
+        <div id="weatherDisplay" class="weather-card" style="display: none;">
+            <h4 style="margin-bottom: 15px;">🌤️ Weather Info</h4>
+            <div id="weatherContent"></div>
+        </div>
+        
+        <h4 style="margin-top: 20px; margin-bottom: 10px;">📋 Saved Areas:</h4>
+        <div id="polygonList" class="polygon-list">
+            <div class="polygon-item">Loading...</div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        // Initialize map
+        var map = L.map('map').setView([40.7128, -74.0060], 13);
+        
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+        
+        // Drawing state
+        var points = [];
+        var polygonLayer = null;
+        var tempLines = null;
+        var markers = [];
+        
+        // Click handler for drawing
+        map.on('click', function(e) {
+            addPoint(e.latlng);
+        });
+        
+        // Double-click to finish polygon
+        map.on('dblclick', function(e) {
+            e.originalEvent.preventDefault(); // Prevent map zoom
+            if (points.length >= 3) {
+                finishPolygon();
+            } else {
+                alert('Need at least 3 points to create a polygon');
+            }
+        });
+        
+        function addPoint(latlng) {
+            points.push(latlng);
+            
+            // Add marker with number
+            var marker = L.marker(latlng, {
+                icon: L.divIcon({
+                    className: 'point-marker',
+                    html: `<div class="point-marker">${points.length}</div>`
+                })
+            }).addTo(map);
+            markers.push(marker);
+            
+            // Update status
+            document.getElementById('status').innerHTML = `📍 ${points.length} points added. Double-click to finish.`;
+            
+            // Draw temporary lines
+            if (tempLines) map.removeLayer(tempLines);
+            if (points.length >= 2) {
+                tempLines = L.polyline(points, {
+                    color: '#3498db',
+                    weight: 3,
+                    dashArray: '5, 5'
+                }).addTo(map);
+            }
+            
+            // Enable save button if we have enough points
+            if (points.length >= 3) {
+                document.getElementById('saveBtn').disabled = false;
+            }
+        }
+        
+        function finishPolygon() {
+            if (points.length < 3) {
+                alert('Need at least 3 points to create a polygon');
+                return;
+            }
+            
+            // Close the polygon
+            var closedPoints = [...points, points[0]];
+            
+            // Remove temp lines
+            if (tempLines) map.removeLayer(tempLines);
+            
+            // Draw final polygon
+            polygonLayer = L.polygon(closedPoints, {
+                color: '#27ae60',
+                weight: 4,
+                fillColor: '#2ecc71',
+                fillOpacity: 0.3
+            }).addTo(map);
+            
+            document.getElementById('status').innerHTML = '✅ Polygon complete! Click "Save Area" to store in PostGIS.';
+        }
+        
+        function resetDrawing() {
+            // Clear points
+            points = [];
+            
+            // Remove markers
+            markers.forEach(m => map.removeLayer(m));
+            markers = [];
+            
+            // Remove layers
+            if (polygonLayer) map.removeLayer(polygonLayer);
+            if (tempLines) map.removeLayer(tempLines);
+            
+            polygonLayer = null;
+            tempLines = null;
+            
+            document.getElementById('status').innerHTML = '👆 Click on map to start drawing';
+            document.getElementById('saveBtn').disabled = true;
+        }
+        
+        function savePolygon() {
+            if (!polygonLayer) {
+                alert('Please draw a polygon first!');
+                return;
+            }
+            
+            // Get polygon coordinates
+            var latlngs = polygonLayer.getLatLngs()[0];
+            var coordinates = latlngs.map(ll => [ll.lng, ll.lat]);
+            
+            console.log('Saving polygon with coordinates:', coordinates);
+            console.log('Number of points:', coordinates.length);
+            
+            // Show saving status
+            document.getElementById('status').innerHTML = '⏳ Saving to PostGIS...';
+            
+            // Send to server
+            fetch('/save-polygon/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: 'Area ' + new Date().toLocaleString(),
+                    coordinates: coordinates
+                })
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                if (!response.ok) {
+                    return response.json().then(err => {
+                        throw new Error(err.error || `HTTP error! status: ${response.status}`);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Success response:', data);
+                
+                if (data.success) {
+                    document.getElementById('status').innerHTML = '✅ Saved to PostGIS!';
+                    
+                    if (data.weather) {
+                        displayWeather(data.weather);
+                    }
+                    
+                    // Refresh the list
+                    loadPolygons();
+                    
+                    // Clear the drawing
+                    resetDrawing();
+                    
+                    alert('Polygon saved successfully to PostGIS!');
+                } else {
+                    throw new Error(data.error || 'Unknown error');
+                }
+            })
+            .catch(error => {
+                console.error('Error details:', error);
+                document.getElementById('status').innerHTML = '❌ Error: ' + error.message;
+                alert('Error saving polygon: ' + error.message);
+            });
+        }
+        
+        function displayWeather(weather) {
+            var weatherDisplay = document.getElementById('weatherDisplay');
+            var weatherContent = document.getElementById('weatherContent');
+            
+            if (weather.error) {
+                weatherContent.innerHTML = `<div style="color: #ff6b6b;">${weather.error}</div>`;
+            } else {
+                weatherContent.innerHTML = `
+                    <div class="weather-item">
+                        <span>📍 Location:</span>
+                        <strong>${weather.city || 'Unknown'}</strong>
+                    </div>
+                    <div class="weather-item">
+                        <span>🌡️ Temperature:</span>
+                        <strong>${weather.temperature}°C</strong>
+                    </div>
+                    <div class="weather-item">
+                        <span> Feels like:</span>
+                        <strong>${weather.feels_like}°C</strong>
+                    </div>
+                    <div class="weather-item">
+                        <span>💧 Humidity:</span>
+                        <strong>${weather.humidity}%</strong>
+                    </div>
+                    <div class="weather-item">
+                        <span>🌬️ Wind:</span>
+                        <strong>${weather.wind_speed} m/s</strong>
+                    </div>
+                    <div class="weather-item">
+                        <span>☁️ Conditions:</span>
+                        <strong>${weather.description}</strong>
+                    </div>
+                `;
+            }
+            
+            weatherDisplay.style.display = 'block';
+        }
+        
+        function loadPolygons() {
+            console.log('Loading polygons from PostGIS...');
+            
+            fetch('/get-polygons/')
+            .then(response => {
+                console.log('Load response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Loaded polygons:', data);
+                
+                var listHtml = '';
+                
+                if (!data.polygons || data.polygons.length === 0) {
+                    listHtml = '<div class="polygon-item">No saved areas yet</div>';
+                } else {
+                    data.polygons.forEach(poly => {
+                        listHtml += `
+                            <div class="polygon-item" onclick="showPolygon(${poly.id})">
+                                <strong>${poly.name}</strong><br>
+                                <small>📍 ${poly.weather?.city || 'Unknown'}</small><br>
+                                <small>🌡️ ${poly.weather?.temperature || 'N/A'}°C</small>
+                            </div>
+                        `;
+                    });
+                }
+                
+                document.getElementById('polygonList').innerHTML = listHtml;
+            })
+            .catch(error => {
+                console.error('Error loading polygons:', error);
+                document.getElementById('polygonList').innerHTML = '<div class="polygon-item">Error loading polygons</div>';
+            });
+        }
+        
+        function showPolygon(id) {
+            fetch('/get-polygons/')
+            .then(res => res.json())
+            .then(data => {
+                var poly = data.polygons.find(p => p.id === id);
+                if (poly && poly.geometry) {
+                    // Clear existing
+                    resetDrawing();
+                    
+                    // Add to map
+                    var layer = L.geoJSON(poly.geometry, {
+                        style: { color: '#e74c3c', weight: 4 }
+                    }).addTo(map);
+                    
+                    // Fit bounds
+                    map.fitBounds(layer.getBounds());
+                    
+                    // Show weather
+                    if (poly.weather) {
+                        displayWeather(poly.weather);
+                    }
+                }
+            });
+        }
+        
+        // Load polygons on startup
+        loadPolygons();
+    </script>
+</body>
+</html>
