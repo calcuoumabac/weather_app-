@@ -36,7 +36,7 @@ Double-click to complete the polygon
 The polygon turns green when complete
 
 **Saving Data**
-Click "Save Area to PostGIS"
+- Click "Save Area to PostGIS"
 
 **The app automatically:**
 
