@@ -72,21 +72,26 @@ Click any saved area to:
 ## Quick Start (1-Minute Setup)
 
 **1. Clone and enter**
+
 git clone <your-repo>
 cd gis-weather-app
 
 **2. Setup virtual environment**
+
 python -m venv venv
 venv\Scripts\activate  # Windows
 
 **3. Install dependencies**
+
 pip install -r requirements.txt
 
 **4. Create database**
+
 createdb gis_db
 psql -d gis_db -c "CREATE EXTENSION postgis;"
 
 **5. Run migrations**
+
 python manage.py migrate
 
 **6. Start server**
