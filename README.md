@@ -79,6 +79,7 @@ cd gis-weather-app
 **2. Setup virtual environment**
 
 python -m venv venv
+
 venv\Scripts\activate  # Windows
 
 **3. Install dependencies**
@@ -88,6 +89,7 @@ pip install -r requirements.txt
 **4. Create database**
 
 createdb gis_db
+
 psql -d gis_db -c "CREATE EXTENSION postgis;"
 
 **5. Run migrations**
@@ -95,6 +97,7 @@ psql -d gis_db -c "CREATE EXTENSION postgis;"
 python manage.py migrate
 
 **6. Start server**
+
 python manage.py runserver
  
  
