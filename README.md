@@ -49,6 +49,7 @@ Click "Save Area to PostGIS"
 - Adds to saved list
 
 **Viewing Saved Polygons**
+
 All saved areas appear in the sidebar
 
 Click any saved area to:
@@ -60,6 +61,7 @@ Click any saved area to:
 - See when it was created
 
 **Managing Drawings**
+
 "Clear Drawing" - Remove current drawing
 
 "Refresh List" - Update saved polygons list
