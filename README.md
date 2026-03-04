@@ -12,7 +12,7 @@ This application demonstrates a complete GIS (Geographic Information System) wor
 -**PostGIS** : Spatial database (stores polygons) 
 -**Leaflet.js** : Interactive maps in browser 
 -**OpenWeatherMap API** : Weather data 
--**Bootstrap/CSS** : Styling and layout 
+- **Bootstrap/CSS** : Styling and layout 
  ##  How It Works
  
  
