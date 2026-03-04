@@ -7,12 +7,17 @@ This application demonstrates a complete GIS (Geographic Information System) wor
 - **Database**: PostGIS saves the spatial data
 - **Integration**: Optional weather data from OpenWeatherMap API
 ##  Technologies Used
--**Django** : Python web framework 
--**GeoDjango** : Django's geographic extension 
--**PostGIS** : Spatial database (stores polygons) 
--**Leaflet.js** : Interactive maps in browser 
--**OpenWeatherMap API** : Weather data 
+- **Django** : Python web framework 
+- **GeoDjango** : Django's geographic extension 
+- **PostGIS** : Spatial database (stores polygons) 
+- **Leaflet.js** : Interactive maps in browser 
+- **OpenWeatherMap API** : Weather data 
 - **Bootstrap/CSS** : Styling and layout 
  ##  How It Works
+- .1 Draw polygon
+-  2. Send coordinates
+   3. Save to DB
+   4.  4. Query weather
+   5. Display results 
  
  
